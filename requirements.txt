@@ -3,7 +3,7 @@
 streamlit
 plotly
 pandas
-numpy
+numpy<2.0
 pysqlite3-binary
 # Logging and Utilities
 # (logging, datetime, json, time are standard libraries)
@@ -11,6 +11,7 @@ pysqlite3-binary
 # RAG System and LLM (assumed dependencies)
 langchain
 chromadb==0.4.22
+sentence-transformers==2.2.2
 
 # If using Groq API (for Llama3-70B)
 groq
