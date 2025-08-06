@@ -5,26 +5,29 @@ plotly
 pandas
 numpy<2.0
 pysqlite3-binary
-# Logging and Utilities
-# (logging, datetime, json, time are standard libraries)
 
-# RAG System and LLM (assumed dependencies)
+# PyTorch and Transformers (compatible versions)
+torch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.2
+transformers==4.30.2
+sentence-transformers==2.2.2
+
+# RAG System and LLM
 langchain
 chromadb==0.4.22
-sentence-transformers==2.2.2
 
 # If using Groq API (for Llama3-70B)
 groq
 
-# For environment variable management (if .env is used)
+# For environment variable management
 python-dotenv
 
-# For evaluation metrics (if used in evaluation.py)
+# For evaluation metrics
 scikit-learn
 rouge-score
 
-# Add any other dependencies as needed for your custom modules
+# LangChain modules
 langchain_community
-langchain_groq 
-sentence-transformers
+langchain_groq
 langchain-huggingface

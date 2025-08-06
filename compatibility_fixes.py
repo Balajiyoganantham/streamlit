@@ -16,6 +16,10 @@ def apply_compatibility_fixes():
     os.environ['CHROMA_SERVER_HOST'] = 'localhost'
     os.environ['CHROMA_SERVER_HTTP_PORT'] = '8000'
     
+    # Fix PyTorch device issues
+    os.environ['CUDA_VISIBLE_DEVICES'] = ''  # Force CPU usage
+    os.environ['TOKENIZERS_PARALLELISM'] = 'false'  # Avoid tokenizer warnings
+    
     # Fix SQLite compatibility
     try:
         import sys
