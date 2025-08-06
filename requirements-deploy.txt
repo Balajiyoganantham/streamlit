@@ -1,4 +1,3 @@
-# Requirements for Zoro - GitHub API Assistant
 # Essential packages for Streamlit deployment
 streamlit
 plotly
