@@ -1,157 +1,109 @@
-# 🗡️ Zoro - GitHub API Assistant (v2)
+# 🗡️ Zoro - Enhanced GitHub API Assistant
 
-A modular, production-grade RAG (Retrieval-Augmented Generation) system for GitHub API documentation, built with LangChain, Groq, ChromaDB, and Streamlit. Now with custom sliding window chunking and a ChatGPT-style conversational UI.
-
----
+A powerful RAG (Retrieval-Augmented Generation) system built with Streamlit, LangChain, and Groq LLM for answering GitHub API questions.
 
 ## 🚀 Features
-- **Modular RAG System**: Clean separation of concerns for embeddings, vectorstore, memory, prompts, and evaluation
-- **Custom Sliding Window Chunking**: Robust, context-preserving chunking for all documents
-- **Fast LLM Integration**: Uses Groq's Llama3-70B for rapid, high-quality responses
-- **Vector Database**: ChromaDB for efficient semantic retrieval
-- **Conversational Memory**: Maintains context across chat sessions
-- **Evaluation System**: Built-in metrics (F1, ROUGE, keyword coverage)
-- **Modern UI**: Streamlit app with ChatGPT-style chat experience and analytics
 
----
+- **Smart Q&A System**: Ask questions about GitHub API and get accurate answers
+- **Memory & Context**: Maintains conversation history for better context
+- **Real-time Analytics**: Performance metrics and response statistics
+- **Comprehensive Evaluation**: Built-in evaluation system with multiple metrics
+- **Beautiful UI**: Modern, responsive interface with gradient styling
 
-## 🛠️ Technology Stack
-- **Framework**: LangChain
-- **LLM**: Groq (llama3-70b-8192)
-- **Vector Store**: ChromaDB
-- **Embeddings**: BAAI/bge-large-en-v1.5
+## 🛠️ Tech Stack
+
 - **Frontend**: Streamlit
-- **Evaluation**: ROUGE, F1 Score, Keyword Coverage
+- **LLM**: Groq (Llama3-70B)
+- **Vector Database**: ChromaDB
+- **Embeddings**: Sentence Transformers
+- **Framework**: LangChain
+- **Visualization**: Plotly
 
----
+## 📦 Installation
 
-## 📋 Prerequisites
-- Python 3.8+
-- Groq API key
-- Git
-
----
-
-## 🚀 Quick Start
-
-### 1. Clone the Repository
+1. Clone the repository:
 ```bash
-git clone https://github.com/Balajiyoganantham/github_documentation_RAG.git
-cd github_documentation_RAG
+git clone <your-repo-url>
+cd github_documentation_RAG-main
 ```
 
-### 2. Install Dependencies
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure Environment
-Create a `.env` file in the project root:
+3. Set up environment variables:
 ```bash
-GROQ_API_KEY=your_actual_groq_api_key_here
+# Create a .env file with your Groq API key
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 4. Run the Application
+4. Run the application:
 ```bash
 streamlit run app.py
 ```
 
----
+## 🎯 Usage
 
-## 📁 Project Structure
-```
-github_documentation_RAG/
-├── app.py                 # Streamlit UI (ChatGPT-style)
-├── rag_system/            # Modular RAG system components
-│   ├── __init__.py        # Main RAG system class (modular)
-│   ├── config.py          # Configuration constants
-│   ├── embeddings.py      # Embedding model loader
-│   ├── vectorstore.py     # Document loading & vectorstore logic
-│   ├── memory.py          # Conversation memory setup
-│   ├── prompts.py         # Prompt template logic
-│   ├── conversational_chain.py # Conversational chain setup
-│   ├── response.py        # Confidence scoring
-│   ├── stats.py           # Stats & memory summary
-├── evaluation.py          # Evaluation and testing framework
-├── documents/             # GitHub API documentation files
-├── chroma_db/             # Vector database storage
-├── requirements.txt       # Python dependencies
-├── .env                   # Environment variables (create this)
-├── README.md              # This file
-```
+1. **Initialize the System**: Click "Initialize System" to load documents and set up the RAG pipeline
+2. **Ask Questions**: Use the chat interface to ask GitHub API questions
+3. **View Analytics**: Check the Analytics tab for performance metrics
+4. **Run Evaluation**: Use the Evaluation tab to test system performance
 
----
+## 📊 Evaluation Metrics
+
+The system includes comprehensive evaluation with:
+- **F1 Score**: Measures answer accuracy
+- **ROUGE-1 F1**: Measures text similarity
+- **Keyword Coverage**: Measures expected keyword presence
+- **Success Rate**: Overall evaluation success percentage
 
 ## 🔧 Configuration
-- **Chunk Size**: 400 characters
-- **Chunk Overlap**: 200 characters (sliding window)
-- **Model**: llama3-70b-8192
-- **Embeddings**: BAAI/bge-large-en-v1.5
-- All settings in `rag_system/config.py`
 
----
+Key configuration files:
+- `rag_system/config.py`: System configuration
+- `.streamlit/config.toml`: Streamlit settings
+- `requirements.txt`: Python dependencies
 
-## 🧩 Architecture
-- **Modularized**: Each RAG component is in its own file for maintainability and extensibility.
-- **Custom Chunking**: Uses a custom sliding window chunker (based on RecursiveCharacterTextSplitter) for robust, context-preserving document splitting.
-- **ChatGPT-style UI**: Chat input at the bottom, conversation history above, real-time metrics, and expandable source/context sections.
+## 📁 Project Structure
 
----
-
-## 🧪 Evaluation
-- **F1 Score**: Answer accuracy and completeness
-- **ROUGE Metrics**: Text similarity and overlap
-- **Keyword Coverage**: Important term identification
-- **Success Rate**: Overall system reliability
-
-Run evaluation from the Streamlit interface or use:
-```bash
-python evaluation.py
+```
+github_documentation_RAG-main/
+├── app.py                 # Main Streamlit application
+├── evaluation.py          # Evaluation system
+├── rag_system/           # RAG system modules
+│   ├── config.py         # Configuration
+│   ├── embeddings.py     # Embedding models
+│   ├── vectorstore.py    # Vector database
+│   └── ...
+├── documents/            # GitHub API documentation
+├── requirements.txt      # Python dependencies
+└── README.md            # This file
 ```
 
----
+## 🚀 Deployment
 
-## 🎯 Use Cases
-- **GitHub API Documentation**: Get instant answers about GitHub API endpoints
-- **Code Examples**: Retrieve relevant code snippets and examples
-- **Authentication Help**: Understand OAuth flows and token management
-- **Error Troubleshooting**: Get guidance on common API issues
-- **Best Practices**: Learn recommended patterns and approaches
-
----
-
-## 🔒 Security
-- API keys are stored securely in `.env` files
-- `.env` files are excluded from version control
-- No sensitive data is exposed in the frontend
-
----
+The application is configured for Streamlit Cloud deployment with:
+- Compatibility fixes for various environments
+- Optimized dependencies for Python 3.13
+- System package requirements
 
 ## 🤝 Contributing
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
----
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
----
+This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
-**Balaji** - *GitHub API Documentation RAG System*
+
+**Balaji** - Enhanced with Memory & Analytics 🧠📊
 
 ---
 
-## 🙏 Acknowledgments
-- LangChain team for the excellent framework
-- Groq for lightning-fast LLM inference
-- ChromaDB for efficient vector storage
-- Streamlit for the beautiful UI framework
-
----
-
-⭐ **Star this repository if you find it helpful!** 
+*Powered by LangChain ConversationalRetrievalChain • Groq Llama3-70B • ChromaDB* 
