@@ -78,6 +78,12 @@ class RAGEvaluator:
     def calculate_f1_metrics(self, predicted: str, ground_truth: str) -> Dict[str, float]:
         """Calculate F1, precision, and recall based on word overlap"""
         try:
+            # Handle None or empty strings
+            if not predicted or not isinstance(predicted, str):
+                predicted = ""
+            if not ground_truth or not isinstance(ground_truth, str):
+                ground_truth = ""
+            
             # Tokenize and normalize
             predicted_words = set(re.findall(r'\b\w+\b', predicted.lower()))
             ground_truth_words = set(re.findall(r'\b\w+\b', ground_truth.lower()))
@@ -113,6 +119,12 @@ class RAGEvaluator:
     def calculate_rouge_scores(self, predicted: str, ground_truth: str) -> Dict[str, float]:
         """Calculate ROUGE-1, ROUGE-2, and ROUGE-L scores"""
         try:
+            # Handle None or empty strings
+            if not predicted or not isinstance(predicted, str):
+                predicted = ""
+            if not ground_truth or not isinstance(ground_truth, str):
+                ground_truth = ""
+            
             # Simple ROUGE-1 implementation (unigram overlap)
             predicted_words = re.findall(r'\b\w+\b', predicted.lower())
             ground_truth_words = re.findall(r'\b\w+\b', ground_truth.lower())
@@ -143,11 +155,17 @@ class RAGEvaluator:
     def calculate_keyword_coverage(self, predicted: str, expected_keywords: List[str]) -> Dict[str, Any]:
         """Calculate how many expected keywords are present in the predicted answer"""
         try:
+            # Handle None or empty strings
+            if not predicted or not isinstance(predicted, str):
+                predicted = ""
+            if not expected_keywords or not isinstance(expected_keywords, list):
+                expected_keywords = []
+            
             predicted_lower = predicted.lower()
             found_keywords = []
             
             for keyword in expected_keywords:
-                if keyword.lower() in predicted_lower:
+                if isinstance(keyword, str) and keyword.lower() in predicted_lower:
                     found_keywords.append(keyword)
             
             coverage = len(found_keywords) / len(expected_keywords) if expected_keywords else 1.0
@@ -165,9 +183,9 @@ class RAGEvaluator:
             return {
                 "coverage": 0.0,
                 "found_keywords": [],
-                "expected_keywords": expected_keywords,
+                "expected_keywords": expected_keywords if isinstance(expected_keywords, list) else [],
                 "found_count": 0,
-                "expected_count": len(expected_keywords)
+                "expected_count": len(expected_keywords) if isinstance(expected_keywords, list) else 0
             }
     
     def evaluate_response(self, question: str, predicted_response: str, qa_pair: Dict[str, Any]) -> Dict[str, Any]:

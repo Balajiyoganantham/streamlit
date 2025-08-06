@@ -1,3 +1,8 @@
+# Force Python to use pysqlite3 instead of sqlite3
+import sys
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 import streamlit as st
 import logging
 from datetime import datetime
@@ -601,6 +606,86 @@ def main():
         # Evaluation system
         st.markdown("### 🧪 System Evaluation")
         
+        # Display existing evaluation files
+        import os
+        evaluation_folder = "evaluation"
+        
+        if os.path.exists(evaluation_folder):
+            evaluation_files = [f for f in os.listdir(evaluation_folder) if f.endswith('.json')]
+            if evaluation_files:
+                st.markdown("### 📁 Previous Evaluation Results")
+                st.write(f"Found {len(evaluation_files)} evaluation result(s):")
+                
+                # Sort files by modification time (newest first)
+                evaluation_files.sort(key=lambda x: os.path.getmtime(os.path.join(evaluation_folder, x)), reverse=True)
+                
+                for i, filename in enumerate(evaluation_files[:5]):  # Show last 5 files
+                    file_path = os.path.join(evaluation_folder, filename)
+                    file_size = os.path.getsize(file_path)
+                    file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+                    
+                    col1, col2, col3 = st.columns([3, 1, 1])
+                    with col1:
+                        st.write(f"📄 **{filename}**")
+                    with col2:
+                        st.write(f"📊 {file_size // 1024} KB")
+                    with col3:
+                        st.write(f"🕒 {file_time.strftime('%Y-%m-%d %H:%M')}")
+                
+                if len(evaluation_files) > 5:
+                    st.info(f"... and {len(evaluation_files) - 5} more files")
+                
+                # Add option to load previous evaluation
+                st.markdown("### 📖 Load Previous Evaluation")
+                selected_file = st.selectbox(
+                    "Choose an evaluation file to view:",
+                    ["Select a file..."] + evaluation_files,
+                    key="evaluation_file_selector"
+                )
+                
+                if selected_file and selected_file != "Select a file...":
+                    try:
+                        file_path = os.path.join(evaluation_folder, selected_file)
+                        with open(file_path, 'r') as f:
+                            loaded_results = json.load(f)
+                        
+                        st.success(f"✅ Loaded evaluation results from {selected_file}")
+                        
+                        # Display loaded results
+                        if "aggregate_metrics" in loaded_results:
+                            metrics = loaded_results["aggregate_metrics"]
+                            
+                            # Display metrics in a compact format
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
+                                if "error" not in metrics.get('f1_score', {}):
+                                    f1_score = metrics['f1_score']['mean']
+                                    st.metric("F1 Score", f"{f1_score:.3f}", f"±{metrics['f1_score']['std']:.3f}")
+                            
+                            with col2:
+                                if "error" not in metrics.get('rouge1_f', {}):
+                                    rouge_score = metrics['rouge1_f']['mean']
+                                    st.metric("ROUGE-1 F1", f"{rouge_score:.3f}", f"±{metrics['rouge1_f']['std']:.3f}")
+                            
+                            with col3:
+                                if "error" not in metrics.get('keyword_coverage', {}):
+                                    keyword_cov = metrics['keyword_coverage']['mean']
+                                    st.metric("Keyword Coverage", f"{keyword_cov:.3f}", f"±{metrics['keyword_coverage']['std']:.3f}")
+                            
+                            with col4:
+                                success_rate = loaded_results["successful_evaluations"] / loaded_results["total_questions"]
+                                st.metric("Success Rate", f"{success_rate:.1%}")
+                        
+                        # Show evaluation timestamp
+                        if "evaluation_timestamp" in loaded_results:
+                            st.info(f"📅 Evaluation performed on: {loaded_results['evaluation_timestamp']}")
+                        
+                    except Exception as e:
+                        st.error(f"Error loading evaluation file: {e}")
+                
+                st.markdown("---")
+        
         col1, col2 = st.columns([3, 1])
         
         with col1:
@@ -621,74 +706,146 @@ def main():
                             # Restore original memory
                             st.session_state.rag_system.memory = original_memory
                             
-                            # Display results
-                            st.markdown("### 📊 Evaluation Results")
+                            # Display results with improved visibility
+                            st.markdown("## 📊 Evaluation Results")
+                            st.markdown("---")
                             
-                            if "error" not in evaluation_results["aggregate_metrics"]:
-                                metrics = evaluation_results["aggregate_metrics"]
-                                
-                                # Summary metrics
-                                col1, col2, col3, col4 = st.columns(4)
-                                
-                                with col1:
+                            metrics = evaluation_results["aggregate_metrics"]
+                            
+                            # Summary metrics with improved styling and error handling
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
+                                if "error" not in metrics.get('f1_score', {}):
                                     f1_score = metrics['f1_score']['mean']
-                                    st.metric("F1 Score", f"{f1_score:.3f}", f"±{metrics['f1_score']['std']:.3f}")
-                                
-                                with col2:
+                                    st.markdown(f"""
+                                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+                                        <h3 style="margin: 0; font-size: 24px;">F1 Score</h3>
+                                        <h2 style="margin: 10px 0; font-size: 36px;">{f1_score:.3f}</h2>
+                                        <p style="margin: 0; font-size: 16px;">±{metrics['f1_score']['std']:.3f}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                else:
+                                    st.error(f"F1 Score: {metrics['f1_score']['error']}")
+                            
+                            with col2:
+                                if "error" not in metrics.get('rouge1_f', {}):
                                     rouge_score = metrics['rouge1_f']['mean']
-                                    st.metric("ROUGE-1 F1", f"{rouge_score:.3f}", f"±{metrics['rouge1_f']['std']:.3f}")
-                                
-                                with col3:
+                                    st.markdown(f"""
+                                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px; color: white;">
+                                        <h3 style="margin: 0; font-size: 24px;">ROUGE-1 F1</h3>
+                                        <h2 style="margin: 10px 0; font-size: 36px;">{rouge_score:.3f}</h2>
+                                        <p style="margin: 0; font-size: 16px;">±{metrics['rouge1_f']['std']:.3f}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                else:
+                                    st.error(f"ROUGE-1 F1: {metrics['rouge1_f']['error']}")
+                            
+                            with col3:
+                                if "error" not in metrics.get('keyword_coverage', {}):
                                     keyword_cov = metrics['keyword_coverage']['mean']
-                                    st.metric("Keyword Coverage", f"{keyword_cov:.3f}", f"±{metrics['keyword_coverage']['std']:.3f}")
-                                
-                                with col4:
-                                    success_rate = evaluation_results["successful_evaluations"] / evaluation_results["total_questions"]
-                                    st.metric("Success Rate", f"{success_rate:.1%}")
-                                
-                                # Visualization of results
-                                eval_data = []
-                                for i, result in enumerate(evaluation_results["individual_results"]):
-                                    if "error" not in result:
+                                    st.markdown(f"""
+                                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 10px; color: white;">
+                                        <h3 style="margin: 0; font-size: 24px;">Keyword Coverage</h3>
+                                        <h2 style="margin: 10px 0; font-size: 36px;">{keyword_cov:.3f}</h2>
+                                        <p style="margin: 0; font-size: 16px;">±{metrics['keyword_coverage']['std']:.3f}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                else:
+                                    st.error(f"Keyword Coverage: {metrics['keyword_coverage']['error']}")
+                            
+                            with col4:
+                                success_rate = evaluation_results["successful_evaluations"] / evaluation_results["total_questions"]
+                                st.markdown(f"""
+                                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border-radius: 10px; color: white;">
+                                    <h3 style="margin: 0; font-size: 24px;">Success Rate</h3>
+                                    <h2 style="margin: 10px 0; font-size: 36px;">{success_rate:.1%}</h2>
+                                    <p style="margin: 0; font-size: 16px;">{evaluation_results["successful_evaluations"]}/{evaluation_results["total_questions"]} questions</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Add a summary section for better visibility
+                            st.markdown("---")
+                            st.markdown("### 📈 Evaluation Summary")
+                            
+                            # Create a summary table
+                            summary_data = {
+                                "Metric": ["F1 Score", "ROUGE-1 F1", "Keyword Coverage", "Success Rate"],
+                                "Value": [
+                                    f"{metrics.get('f1_score', {}).get('mean', 0):.3f}" if "error" not in metrics.get('f1_score', {}) else "Error",
+                                    f"{metrics.get('rouge1_f', {}).get('mean', 0):.3f}" if "error" not in metrics.get('rouge1_f', {}) else "Error",
+                                    f"{metrics.get('keyword_coverage', {}).get('mean', 0):.3f}" if "error" not in metrics.get('keyword_coverage', {}) else "Error",
+                                    f"{success_rate:.1%}"
+                                ],
+                                "Status": [
+                                    "✅ Good" if metrics.get('f1_score', {}).get('mean', 0) > 0.5 else "⚠️ Needs Improvement" if "error" not in metrics.get('f1_score', {}) else "❌ Error",
+                                    "✅ Good" if metrics.get('rouge1_f', {}).get('mean', 0) > 0.5 else "⚠️ Needs Improvement" if "error" not in metrics.get('rouge1_f', {}) else "❌ Error",
+                                    "✅ Good" if metrics.get('keyword_coverage', {}).get('mean', 0) > 0.7 else "⚠️ Needs Improvement" if "error" not in metrics.get('keyword_coverage', {}) else "❌ Error",
+                                    "✅ Excellent" if success_rate == 1.0 else "✅ Good" if success_rate > 0.8 else "⚠️ Needs Improvement"
+                                ]
+                            }
+                            
+                            summary_df = pd.DataFrame(summary_data)
+                            st.table(summary_df)
+                            
+                            # Add evaluation statistics
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.info(f"**Total Questions:** {evaluation_results['total_questions']}")
+                            with col2:
+                                st.success(f"**Successful:** {evaluation_results['successful_evaluations']}")
+                            with col3:
+                                st.warning(f"**Failed:** {evaluation_results['failed_evaluations']}")
+                            
+                            st.markdown("---")
+                            
+                            # Visualization of results
+                            eval_data = []
+                            for i, result in enumerate(evaluation_results["individual_results"]):
+                                if "error" not in result:
+                                    try:
                                         eval_data.append({
                                             'Question': i + 1,
-                                            'F1_Score': result['f1_metrics']['f1'],
-                                            'ROUGE_F1': result['rouge_scores']['rouge1_f'],
-                                            'Keyword_Coverage': result['keyword_coverage'],
+                                            'F1_Score': result.get('f1_metrics', {}).get('f1', 0.0),
+                                            'ROUGE_F1': result.get('rouge_scores', {}).get('rouge1_f', 0.0),
+                                            'Keyword_Coverage': result.get('keyword_coverage', 0.0),
                                             'Question_Text': result['question'][:30] + "..."
                                         })
+                                    except (KeyError, TypeError) as e:
+                                        logger.warning(f"Error processing result {i}: {e}")
+                                        continue
+                            
+                            if eval_data:
+                                eval_df = pd.DataFrame(eval_data)
                                 
-                                if eval_data:
-                                    eval_df = pd.DataFrame(eval_data)
-                                    
-                                    # Create evaluation charts
-                                    eval_fig = make_subplots(
-                                        rows=1, cols=3,
-                                        subplot_titles=('F1 Scores', 'ROUGE-1 F1', 'Keyword Coverage')
-                                    )
-                                    
-                                    eval_fig.add_trace(
-                                        go.Bar(x=eval_df['Question'], y=eval_df['F1_Score'], 
-                                              name='F1', marker_color='#4ecdc4'),
-                                        row=1, col=1
-                                    )
-                                    
-                                    eval_fig.add_trace(
-                                        go.Bar(x=eval_df['Question'], y=eval_df['ROUGE_F1'], 
-                                              name='ROUGE', marker_color='#ff6b6b'),
-                                        row=1, col=2
-                                    )
-                                    
-                                    eval_fig.add_trace(
-                                        go.Bar(x=eval_df['Question'], y=eval_df['Keyword_Coverage'], 
-                                              name='Keywords', marker_color='#667eea'),
-                                        row=1, col=3
-                                    )
-                                    
-                                    eval_fig.update_layout(height=400, showlegend=False,
-                                                         title_text="📊 Detailed Evaluation Results")
-                                    
-                                    st.plotly_chart(eval_fig, use_container_width=True)
+                                # Create evaluation charts
+                                eval_fig = make_subplots(
+                                    rows=1, cols=3,
+                                    subplot_titles=('F1 Scores', 'ROUGE-1 F1', 'Keyword Coverage')
+                                )
+                                
+                                eval_fig.add_trace(
+                                    go.Bar(x=eval_df['Question'], y=eval_df['F1_Score'], 
+                                          name='F1', marker_color='#4ecdc4'),
+                                    row=1, col=1
+                                )
+                                
+                                eval_fig.add_trace(
+                                    go.Bar(x=eval_df['Question'], y=eval_df['ROUGE_F1'], 
+                                          name='ROUGE', marker_color='#ff6b6b'),
+                                    row=1, col=2
+                                )
+                                
+                                eval_fig.add_trace(
+                                    go.Bar(x=eval_df['Question'], y=eval_df['Keyword_Coverage'], 
+                                          name='Keywords', marker_color='#667eea'),
+                                    row=1, col=3
+                                )
+                                
+                                eval_fig.update_layout(height=400, showlegend=False,
+                                                     title_text="📊 Detailed Evaluation Results")
+                                
+                                st.plotly_chart(eval_fig, use_container_width=True)
                             
                             # Detailed results
                             with st.expander("📋 Detailed Results", expanded=False):
@@ -699,25 +856,50 @@ def main():
                                         col1, col2 = st.columns(2)
                                         with col1:
                                             st.write("**Metrics:**")
-                                            st.write(f"• F1 Score: {result['f1_metrics']['f1']:.3f}")
-                                            st.write(f"• ROUGE-1 F1: {result['rouge_scores']['rouge1_f']:.3f}")
-                                            st.write(f"• Keyword Coverage: {result['keyword_coverage']:.3f}")
+                                            try:
+                                                f1_score = result.get('f1_metrics', {}).get('f1', 0.0)
+                                                rouge_score = result.get('rouge_scores', {}).get('rouge1_f', 0.0)
+                                                keyword_coverage = result.get('keyword_coverage', 0.0)
+                                                
+                                                st.write(f"• F1 Score: {f1_score:.3f}")
+                                                st.write(f"• ROUGE-1 F1: {rouge_score:.3f}")
+                                                st.write(f"• Keyword Coverage: {keyword_coverage:.3f}")
+                                            except (KeyError, TypeError) as e:
+                                                st.error(f"Error displaying metrics: {e}")
                                         
                                         with col2:
                                             st.write("**Keywords Found:**")
-                                            found = len(result['found_keywords'])
-                                            total = len(result['expected_keywords'])
-                                            st.write(f"• Found: {found}/{total}")
-                                            if result['found_keywords']:
-                                                st.write("• " + ", ".join(result['found_keywords']))
+                                            try:
+                                                found_keywords = result.get('found_keywords', [])
+                                                expected_keywords = result.get('expected_keywords', [])
+                                                found = len(found_keywords)
+                                                total = len(expected_keywords)
+                                                st.write(f"• Found: {found}/{total}")
+                                                if found_keywords:
+                                                    st.write("• " + ", ".join(found_keywords))
+                                            except (KeyError, TypeError) as e:
+                                                st.error(f"Error displaying keywords: {e}")
                                         
                                         st.write("**System Response:**")
-                                        st.info(result['predicted_response'])
+                                        try:
+                                            st.info(result.get('predicted_response', 'No response available'))
+                                        except (KeyError, TypeError) as e:
+                                            st.error(f"Error displaying response: {e}")
                                         
                                         st.markdown("---")
+                                    else:
+                                        st.error(f"**Question {i+1}:** {result.get('question', 'Unknown question')} - {result.get('error', 'Unknown error')}")
+                                        st.markdown("---")
                             
-                            # Save results
-                            results_file = f"evaluation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                            # Save results to evaluation folder
+                            import os
+                            evaluation_folder = "evaluation"
+                            
+                            # Create evaluation folder if it doesn't exist
+                            if not os.path.exists(evaluation_folder):
+                                os.makedirs(evaluation_folder)
+                            
+                            results_file = os.path.join(evaluation_folder, f"evaluation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
                             try:
                                 with open(results_file, 'w') as f:
                                     json.dump(evaluation_results, f, indent=2)
