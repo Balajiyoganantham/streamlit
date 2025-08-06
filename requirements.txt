@@ -4,7 +4,7 @@ streamlit
 plotly
 pandas
 numpy
-
+pysqlite3-binary
 # Logging and Utilities
 # (logging, datetime, json, time are standard libraries)
 
