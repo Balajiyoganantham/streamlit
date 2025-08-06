@@ -62,14 +62,28 @@ def sliding_window_chunk_documents(documents, chunk_size, chunk_overlap):
     return all_chunks
 
 def create_vectorstore(documents, text_splitter, embeddings, persist_directory="./chroma_db"):
-    # Use the custom sliding window chunker
-    texts = sliding_window_chunk_documents(documents, chunk_size=400, chunk_overlap=200)
-    vectorstore = Chroma.from_documents(
-        documents=texts,
-        embedding=embeddings,
-        collection_name=COLLECTION_NAME,
-        persist_directory=persist_directory
-    )
-    vectorstore.persist()
-    logger.info(f"Created vectorstore with {len(texts)} chunks")
-    return vectorstore 
+    try:
+        # Use the custom sliding window chunker
+        texts = sliding_window_chunk_documents(documents, chunk_size=400, chunk_overlap=200)
+        
+        # Create vectorstore with proper error handling
+        vectorstore = Chroma.from_documents(
+            documents=texts,
+            embedding=embeddings,
+            collection_name=COLLECTION_NAME,
+            persist_directory=persist_directory
+        )
+        
+        # Persist the vectorstore
+        try:
+            vectorstore.persist()
+            logger.info(f"Created vectorstore with {len(texts)} chunks")
+        except Exception as e:
+            logger.warning(f"Could not persist vectorstore: {e}")
+            # Continue without persistence for deployment environments
+        
+        return vectorstore
+        
+    except Exception as e:
+        logger.error(f"Error creating vectorstore: {e}")
+        raise 

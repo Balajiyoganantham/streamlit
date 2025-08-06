@@ -3,6 +3,12 @@ import sys
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
+# Fix ChromaDB configuration for deployment
+import os
+os.environ['CHROMA_DB_IMPL'] = 'duckdb+parquet'
+os.environ['CHROMA_SERVER_HOST'] = 'localhost'
+os.environ['CHROMA_SERVER_HTTP_PORT'] = '8000'
+
 import streamlit as st
 import logging
 from datetime import datetime

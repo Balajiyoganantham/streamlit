@@ -10,7 +10,7 @@ pysqlite3-binary
 
 # RAG System and LLM (assumed dependencies)
 langchain
-chromadb
+chromadb==0.4.22
 
 # If using Groq API (for Llama3-70B)
 groq
