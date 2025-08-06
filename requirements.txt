@@ -1,0 +1,29 @@
+# Requirements for Zoro - GitHub API Assistant
+# Core UI and Visualization
+streamlit
+plotly
+pandas
+numpy
+
+# Logging and Utilities
+# (logging, datetime, json, time are standard libraries)
+
+# RAG System and LLM (assumed dependencies)
+langchain
+chromadb
+
+# If using Groq API (for Llama3-70B)
+groq
+
+# For environment variable management (if .env is used)
+python-dotenv
+
+# For evaluation metrics (if used in evaluation.py)
+scikit-learn
+rouge-score
+
+# Add any other dependencies as needed for your custom modules
+langchain_community
+langchain_groq 
+sentence-transformers
+langchain-huggingface
